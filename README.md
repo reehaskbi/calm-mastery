@@ -1,0 +1,34 @@
+# Calm Mastery: personal MVP
+
+A 41-day programme app for emotional regulation (impatience, raised voice, sulking), clearer thinking and reading people. About 6 minutes a day.
+
+## Run it
+
+```powershell
+node server.js
+```
+
+Then open http://localhost:5173.
+
+## Screens
+
+- **Today**: daily principle (with research source), physiological-sigh breathing timer, one focus for the day.
+- **Trigger**: tap the moment you feel triggered. Guided steps for that kind of trigger, emotion labelling, and a timer that measures your recovery time.
+- **Night**: a 3–4 minute log: fact vs. assumption, two alternative explanations, three 1–5 self-ratings, one insight.
+- **Progress**: 41-day grid ("never miss twice"), recovery-time trend, trigger counts, weekly ratings, backup export/import.
+
+## Files
+
+- `app/content.js`: all programme content and research sources. Edit or translate this file without touching the code.
+- `app/app.js`: app logic.
+- `app/styles.css`, `app/index.html`, `app/manifest.json`, `app/sw.js`: UI shell, installable-app manifest, offline support.
+- `server.js`: tiny local server, no dependencies.
+
+## Data and privacy
+
+Everything is stored in the browser's localStorage on the device you use. Nothing is sent anywhere. Use **Progress → Export backup** regularly. Clearing browser data erases it.
+
+## Using it on your phone
+
+Data lives per device, so pick the one device you'll use daily (your phone is best for the Trigger button).
+To install it on a phone as an app with offline support, it needs to be served over HTTPS, for example by deploying the `app/` folder to a free static host (GitHub Pages, Netlify or Cloudflare Pages). Data still stays on the phone.

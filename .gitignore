@@ -1,0 +1,6 @@
+# Personal material: never publish
+*.pdf
+.claude/
+*.json.bak
+calm-mastery-backup-*.json
+node_modules/
