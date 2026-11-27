@@ -1,0 +1,23 @@
+{
+  "id": "./",
+  "name": "Calm Mastery",
+  "short_name": "Calm Mastery",
+  "description": "41-day programme for emotional regulation, patience and clear thinking.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f1ec",
+  "theme_color": "#0b5d56",
+  "categories": ["health", "lifestyle", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Log a trigger", "short_name": "Trigger", "url": "./#trigger", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Night log", "short_name": "Night", "url": "./#night", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
