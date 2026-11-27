@@ -32,3 +32,12 @@ Everything is stored in the browser's localStorage on the device you use. Nothin
 
 Data lives per device, so pick the one device you'll use daily (your phone is best for the Trigger button).
 To install it on a phone as an app with offline support, it needs to be served over HTTPS, for example by deploying the `app/` folder to a free static host (GitHub Pages, Netlify or Cloudflare Pages). Data still stays on the phone.
+
+## Live site (GitHub Pages)
+
+https://reehaskbi.github.io/calm-mastery/ is served from the `gh-pages` branch, which holds only the contents of `app/`.
+After committing changes to `main`, publish them with:
+
+```bash
+git subtree split --prefix app -b gh-pages-tmp && git push -f origin gh-pages-tmp:gh-pages && git branch -D gh-pages-tmp
+```
