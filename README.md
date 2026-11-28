@@ -17,6 +17,12 @@ Then open http://localhost:5173.
   - *Trigger*: tap the moment you feel triggered. Guided steps for that kind of trigger, your if-then plan, emotion labelling, and a timer that measures your recovery time. Also one-tap "handled it well" wins.
   - *Observe*: log what you noticed in someone (cues, facts, two possible meanings, a prediction), then later mark which meaning was right.
   - *People*: each person's baseline, what sets them off, what helps, their most frequent cues and your read accuracy for them.
+- **Sadhana**: three practices. Any of them lights up the day on the 41-day grid and counts toward the streak.
+  - *Mala*: a japa counter (108, 54, 27 or 21 beads). Full-screen mode turns the whole screen into a tap pad you can use with your eyes closed, and keeps the screen awake. Each bead gives a soft wooden click (Web Audio) plus a vibration on Android or a haptic tick on iPhones with iOS 18 or later. A bell marks the guru bead. Space or Enter counts a bead and Backspace undoes one. An optional earbud play/pause or next press also counts a bead (beta). Web apps can't read the volume buttons.
+  - *Pranayama*: a paced guide for Nadi Shodhana (with left/right nostril indicators), Bhramari (with a hum-along drone), Sama Vritti and slow deep breathing, with selectable ratios and rounds. Gentle mode removes breath holds. Finishing a session also ticks off the morning breathing step.
+  - *Meditate*: a 5–41 minute timer with a sankalpa (intention) and three styles. Singing-bowl strikes mark the start and end, with optional bells every 5 or 10 minutes.
+  - After each session you rate your stillness from 1 to 10. Progress then compares triggers, recovery time and nightly calm scores on days with practice against days without.
+  - The techniques and cautions follow the books in `Yoga and Pranayama/` (Common Yoga Protocol, *Light on Pranayama*, the Yoga Sutra and others), cited in the app. The **Capture › Trigger** screen has a one-tap "Hum it down" button that starts Bhramari.
 - **Night**: someone you observed (fact, first read, two alternatives), your emotional moment and how you handled it, optional "Why × 3", five 1–5 ratings, one insight.
 - **Library**: how the system works, the 6-month journey, a body-language cue checklist, the emotional toolkit and key ideas from the reference books.
 - **Progress**: 6-month journey, 41-day grid ("never miss twice"), recovery-time trend against a 10-minute goal, triggers, wins, read accuracy, weekly ratings, weekly reviews, all-cycles summary, calendar reminders, backup export/import.
@@ -32,6 +38,7 @@ Then open http://localhost:5173.
 
 - `app/content.js`: all programme content and research sources. Edit or translate this file without touching the code.
 - `app/app.js`: app logic.
+- `app/sadhana.js`: the Sadhana tab (mala, pranayama, meditation, sound, haptics, wake lock).
 - `app/styles.css`, `app/index.html`, `app/manifest.json`, `app/sw.js`: UI shell, installable-app manifest, offline support.
 - `server.js`: tiny local server, no dependencies.
 
