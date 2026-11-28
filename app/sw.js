@@ -1,5 +1,5 @@
 // Offline support: network first (so updates show up), cache as fallback.
-const CACHE = "neurolens-v7";
+const CACHE = "neurolens-v8";
 const FILES = ["./", "index.html", "styles.css", "content.js", "app.js", "sadhana.js", "manifest.json", "icon.svg", "art/dawn.svg", "art/dusk.svg", "art/dunes.svg",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png"];
 

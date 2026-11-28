@@ -271,35 +271,65 @@ const ICON = {
   play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/>',
 };
 const svgI = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+const LOTUS = `<svg class="lotus" viewBox="0 0 120 80" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M60 70C52 58 50 44 60 22c10 22 8 36 0 48z"/><path d="M60 70C46 66 36 54 34 36c14 4 22 16 26 34z"/><path d="M60 70c14-4 24-16 26-34-14 4-22 16-26 34z"/>
+  <path d="M60 70C42 72 26 64 18 50c16-2 30 6 42 20z"/><path d="M60 70c18 2 34-6 42-20-16-2-30 6-42 20z"/></g></svg>`;
+// Calm score for one night: the average of its 1-5 ratings, as 0-100.
+function nightCalm(k) {
+  const n = state.days[k] && state.days[k].night;
+  const v = n && n.scores ? avg(Object.values(n.scores).filter(Boolean)) : null;
+  return v == null ? null : Math.round(((v - 1) / 4) * 100);
+}
+function calmOver(from, to) {
+  const out = [];
+  for (let k = from; k <= to; k = addDays(k, 1)) { const c = nightCalm(k); if (c != null) out.push(c); }
+  return avg(out);
+}
 function todayHero(k, d, p, day) {
-  const h = new Date().getHours();
-  const greet = h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
   const sd = sadhanaTotals(k, k);
-  const rec = !d.morning.breath ? { title: "Release Tension", meta: "1 min · Physiological sigh", act: `data-action="heroBreath"` }
-    : !sd.list.length ? { title: "Inner Calm", meta: `${SET().medMin} min · Guided meditation`, act: `data-action="s:medGo"` }
-    : h >= 18 && !nightDone(k) ? { title: "Close the Day", meta: "4 min · Night log", act: `data-action="goto" data-tab="night"` }
-    : { title: "Hum it Down", meta: "5 rounds · Bhramari breath", act: `data-action="s:bhramari"` };
-  const q = [["calm", "Calm", `data-action="goto" data-tab="capture"`], ["breath", "Breath", `data-action="s:open" data-m="pranayama"`],
-    ["meditate", "Meditate", `data-action="s:open" data-m="meditation"`], ["mala", "Mala", `data-action="s:open" data-m="mala"`]];
+  const rec = !d.morning.breath ? { title: "Release Tension", text: "Two inhales, one long exhale. Lowers arousal in about a minute.", meta: ["1 min", "Breathing"], act: `data-action="heroBreath"` }
+    : !sd.list.length ? { title: "Inner Calm", text: "Sit, soften and follow the breath. One bowl to begin, three to end.", meta: [`${SET().medMin} min`, "Meditation"], act: `data-action="s:medGo"` }
+    : new Date().getHours() >= 18 && !nightDone(k) ? { title: "Close the Day", text: "Separate what happened from what you assumed, then rest.", meta: ["4 min", "Night log"], act: `data-action="goto" data-tab="night"` }
+    : { title: "Hum it Down", text: "Bhramari: a long, low hum on each exhale to settle the nerves.", meta: ["5 rounds", "Breathing"], act: `data-action="s:bhramari"` };
+  const strip = [-2, -1, 0, 1, 2].map(o => {
+    const dk = addDays(k, o), dn = day + o;
+    if (dn < 1 || dn > CYCLE) return `<div class="day ghost"><b></b>&nbsp;</div>`;
+    const st = o < 0 ? dayStatus(dk) : o === 0 ? "" : "";
+    return `<div class="day ${o === 0 ? "today" : ""} ${st === "full" || st === "partial" ? "done" : ""} ${Math.abs(o) === 2 ? "fade" : ""}"><b>${dn}</b>${o === 0 ? "Today" : "Day"}</div>`;
+  }).join("");
+  // Last 7 nights' calm, oldest first; today is the lit bar.
+  const nights = Array.from({ length: 7 }, (_, i) => addDays(k, i - 6));
+  const vals = nights.map(nightCalm), have = vals.filter(v => v != null);
+  const calm = have.length ? Math.round(avg(have)) : null;
+  const wk = state.triggers.filter(t => diffDays(t.date, k) < 7 && t.minutes != null);
+  const recov = avg(wk.map(t => t.minutes));
   return `
-    <section class="greet">
-      <p>${greet},</p>
-      <h1>${esc(p.name)}</h1>
-      <p class="muted">A calmer mind starts here · Day ${day} of ${CYCLE}</p>
-    </section>
-    <div class="hero" style="--art:url('art/dawn.svg')">
-      <div class="hero-txt">
-        <small>Recommended for you</small>
+    <section class="home-top">
+      <div class="glow"></div>
+      <div class="ht-bar"><div class="ht-brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l1.6 6.1L19 4.9l-3.2 5.4L22 12l-6.2 1.7 3.2 5.4-5.4-3.2L12 22l-1.6-6.1L5 19.1l3.2-5.4L2 12l6.2-1.7L5 4.9l5.4 3.2z"/></svg>NeuroLens</div>
+        <span class="pchip">🔥 ${streak()} · Day ${day}</span></div>
+      <div class="days">${strip}</div>
+      <div class="orb">${LOTUS}</div>
+      <div class="rec">
+        <small>Recommended now · ${esc(p.name)}</small>
         <h2>${rec.title}</h2>
-        <p>${rec.meta}</p>
-        <button class="pill" ${rec.act}>${svgI("play")} Start session</button>
+        <p>${rec.text}</p>
+        <div class="meta"><span>▷ ${rec.meta[0]}</span><span>${rec.meta[1]}</span></div>
+        <button class="play" ${rec.act}>${svgI("play")} Play now</button>
       </div>
+    </section>
+    <div class="card calm-card" data-action="goto" data-tab="progress">
+      <div class="card-h"><span class="ic">◷</span>Calm score · last 7 nights</div>
+      <div class="forecast"><div class="big">${calm == null ? "–" : calm + "%"}</div>
+        <div class="bars">${nights.map((nk, i) => `<div><i class="${i === 6 ? "on" : ""}" style="height:${8 + (vals[i] == null ? 0 : vals[i] * 0.4)}px"></i>${"SMTWTFS"[parseKey(nk).getDay()]}</div>`).join("")}</div></div>
+      ${calm == null ? `<p class="hint" style="margin:8px 0 0">Fill in tonight's night log to start your score.</p>` : ""}
     </div>
-    <div class="quick">${q.map(([ic, l, act], i) => `<button class="q q${i}" ${act}><span>${svgI(ic)}</span>${l}</button>`).join("")}</div>
-    <div class="tiles">
-      <button class="tile" style="--art:url('art/dusk.svg')" data-action="goto" data-tab="night"><b>Night Log</b><small>4 min · ${nightDone(k) ? "Done ✓" : "Reflect"}</small><i>${svgI("play")}</i></button>
-      <button class="tile" style="--art:url('art/dunes.svg')" data-action="s:open" data-m="mala"><b>Japa Mala</b><small>${SET().beadsPerMala} beads · Count</small><i>${svgI("play")}</i></button>
-    </div>`;
+    <div class="stats3">
+      <div><b>${recov == null ? "–" : fmtMin(recov)}</b><span>Avg recovery</span></div>
+      <div><b>${triggersOn(k).length}</b><span>Triggers today</span></div>
+      <div class="hot"><b>${streak()}</b><span>Day streak</span></div>
+    </div>
+    <button class="btn block lib-link" data-action="goto" data-tab="library">📖 Library: ideas, cues &amp; books</button>`;
 }
 
 function breathRun() {
@@ -628,6 +658,32 @@ function renderLibrary() {
 }
 
 // ---------- PROGRESS ----------
+function insightsTop(tk, cycleTrig) {
+  const now = calmOver(addDays(tk, -6), tk), prev = calmOver(addDays(tk, -13), addDays(tk, -7));
+  const v = now == null ? 0 : Math.round(now), ch = now != null && prev ? Math.round(((now - prev) / prev) * 100) : null;
+  // Arc from 180° to 0°, radius 135, centred at (165,170).
+  const ang = Math.PI * (1 - v / 100), x = 165 + 135 * Math.cos(ang), y = 170 - 135 * Math.sin(ang);
+  const mins = cycleTrig.map(t => t.minutes).filter(m => m != null), a = avg(mins);
+  const lo = mins.length ? Math.min(...mins) : null, hi = mins.length ? Math.max(...mins) : null;
+  const pos = mins.length && hi > lo ? ((a - lo) / (hi - lo)) * 100 : 50;
+  return `
+    <div class="ins-h"><h1>Insights</h1><button class="pchip" data-action="goto" data-tab="library">📖 Library</button></div>
+    <div class="gauge">
+      <svg viewBox="0 0 330 180" aria-hidden="true">
+        <defs><linearGradient id="ga" x1="0" x2="1"><stop offset="0" stop-color="#7a3414"/><stop offset=".55" stop-color="#ff7a2f"/><stop offset="1" stop-color="#ffd2a8"/></linearGradient></defs>
+        <path d="M30 170 A135 135 0 0 1 300 170" fill="none" stroke="#2a221e" stroke-width="30" stroke-linecap="round"/>
+        ${v ? `<path d="M30 170 A135 135 0 0 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="url(#ga)" stroke-width="30" stroke-linecap="round"/>
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="#fff"/>` : ""}
+      </svg>
+      <div class="gscore"><b>${now == null ? "–" : v}<span>/100</span></b><br>${ch != null ? `<span class="trend">${ch >= 0 ? "↗" : "↘"} ${Math.abs(ch)}% from last week</span>` : ""}</div>
+    </div>
+    <div class="ins-copy"><h3>Your calm score</h3><p>${now == null ? "Rate your Patience, Voice and Recovery in the night log; your score appears here." : "From your last 7 night logs (Patience, Voice and Recovery ratings)."}</p></div>
+    ${mins.length ? `<div class="card">
+      <div class="rec2"><div>Average recovery<b>${Math.round(a)} <em>min</em></b></div><div style="text-align:right">This cycle<b class="sm">${mins.length} trigger${mins.length > 1 ? "s" : ""}</b></div></div>
+      <div class="slider"><span class="knob" style="left:${pos}%">${Math.round(a)}</span></div>
+      <div class="rec2"><span>Fastest ${lo} ↓</span><span>Slowest ${hi} ↑</span></div>
+    </div>` : ""}`;
+}
 function renderProgress() {
   if (!state.startDate) { view.innerHTML = notStarted() + dataCard(); return; }
   const { cycle, n } = cycleInfo();
@@ -659,6 +715,7 @@ function renderProgress() {
   const reviews = Object.keys(state.reviews).sort().reverse();
 
   view.innerHTML = `
+    ${insightsTop(tk, cycleTrig)}
     <div class="card">
       <h2>Your journey</h2>
       <p class="hint">Day ${n} of about ${PROGRAMME_DAYS} · Month ${month} of 6 · <b>${esc(stage.name)}</b></p>
@@ -893,6 +950,7 @@ function renderReview() {
 // ---------- routing ----------
 function render() {
   const navTab = tab === "review" ? "progress" : tab;
+  document.body.classList.toggle("home", tab === "today" && !!state.startDate && dayNumber() >= 1);
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === navTab));
   renderHeader();
   ({ today: renderToday, capture: renderCapture, sadhana: renderSadhana, night: renderNight, library: renderLibrary, progress: renderProgress, review: renderReview })[tab]();
