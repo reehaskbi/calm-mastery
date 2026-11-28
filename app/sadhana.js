@@ -235,7 +235,8 @@ function sadhanaBusy() { return !!(malaFocus || (pace && pace.timer) || med); }
 // Leaving the tab stops the breath pacer and closes full screen; a meditation keeps running (banner).
 function sadhanaLeave() {
   if (pace && pace.timer) pStop(true);
-  if (malaFocus) { malaFocus = false; earbudOff(); flushSave(); document.body.classList.remove("focus-open"); }
+  if (malaFocus) { malaFocus = false; earbudOff(); flushSave(); }
+  document.body.classList.remove("focus-open"); // full-screen mala or the immersive meditation player
   if (!med) wakeOff();
 }
 
@@ -603,17 +604,26 @@ function pFinish() {
 function meditationHTML() {
   const s = SET();
   if (med) {
-    const left = med.dur - medElapsed();
-    return `<div class="card med-run">
-      ${med.sankalpa ? `<p class="sankalpa">“${esc(med.sankalpa)}”</p>` : ""}
-      <div class="med-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="90" class="track"/><circle cx="100" cy="100" r="90" class="fill" id="medFill" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${100 - (medElapsed() / med.dur) * 100}"/></svg>
-        <div class="med-time" id="medTime">${fmtClock(left)}</div></div>
-      <p class="hint" style="text-align:center">${esc(MEDITATION_STYLES[med.style].name)}${med.bell ? ` · bell every ${med.bell} min` : ""}${med.pausedAt ? " · <b>paused</b>" : ""}</p>
-      <div class="row" style="justify-content:center">
-        <button class="btn" data-action="s:medPause">${med.pausedAt ? "Resume" : "Pause"}</button>
-        <button class="btn" data-action="s:medEnd">End now</button>
+    const el = medElapsed(), st = MEDITATION_STYLES[med.style];
+    return `<div class="immersive" style="--art:url('art/dawn.svg')">
+      <div class="im-top">
+        <button class="im-round" data-action="goto" data-tab="today" aria-label="Back (keeps running)"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <button class="im-round" data-action="s:medEnd" aria-label="End now"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       </div>
-      <p class="hint" style="margin:12px 0 0;text-align:center">${esc(MEDITATION_STYLES[med.style].text)}</p>
+      <div class="im-body">
+        <small>${esc(st.name)}${med.bell ? ` · bell every ${med.bell} min` : ""}</small>
+        <h1>Inner Calm</h1>
+        <p class="im-sub">${med.sankalpa ? `“${esc(med.sankalpa)}”` : "Take a slow breath"}</p>
+        <p class="im-time"><span id="medTime">${fmtClock(el)}</span> / ${fmtClock(med.dur)}${med.pausedAt ? " · paused" : ""}</p>
+        <div class="im-bar"><i id="medBar" style="width:${(el / med.dur) * 100}%"></i></div>
+        <div class="im-ctrl">
+          <button class="im-side" data-action="s:medBell"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="16" r="2"/></svg>${med.bell ? "Bell on" : "Bell off"}</button>
+          <button class="im-play" data-action="s:medPause" aria-label="${med.pausedAt ? "Resume" : "Pause"}">${med.pausedAt
+            ? `<svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>` : `<svg viewBox="0 0 24 24"><path d="M8 5h3v14H8zM13 5h3v14h-3z"/></svg>`}</button>
+          <button class="im-side" data-action="s:medEnd"><svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>End</button>
+        </div>
+        <p class="im-guide">${esc(st.text)}</p>
+      </div>
     </div>`;
   }
   const st = MEDITATION_STYLES[s.medStyle] || Object.values(MEDITATION_STYLES)[0];
@@ -660,8 +670,8 @@ function medTick() {
   const e = medElapsed();
   if (e >= med.dur) return medFinish(false);
   if (med.bell && e >= med.nextBell) { med.nextBell += med.bell * 60000; if (med.dur - e > 30000) Snd.bowl(294, 5, 0.14); }
-  const t = document.getElementById("medTime"); if (t) t.textContent = fmtClock(med.dur - e);
-  const f = document.getElementById("medFill"); if (f) f.setAttribute("stroke-dashoffset", 100 - (e / med.dur) * 100);
+  const t = document.getElementById("medTime"); if (t) t.textContent = fmtClock(e);
+  const f = document.getElementById("medBar"); if (f) f.style.width = (e / med.dur) * 100 + "%";
   const b = document.getElementById("sBannerClock"); if (b) b.textContent = fmtClock(med.dur - e);
 }
 
@@ -783,7 +793,7 @@ function renderSadhana() {
     `<button class="${sMode === m ? "active" : ""}" data-action="s:mode" data-m="${m}">${l}</button>`).join("")}</div>`;
   const body = sMode === "pranayama" ? pranayamaHTML() : sMode === "meditation" ? meditationHTML() : malaHTML();
   view.innerHTML = seg + calibHTML() + body + (med || (pace && pace.timer) ? "" : sadhanaStatsHTML()) + (malaFocus ? malaFocusHTML() : "");
-  document.body.classList.toggle("focus-open", malaFocus);
+  document.body.classList.toggle("focus-open", malaFocus || (!!med && sMode === "meditation"));
   if (pace && pace.timer) pPaint(true);
 }
 
@@ -869,6 +879,8 @@ view.addEventListener("click", e => {
     case "pStop": pStop(false); render(); break;
     case "sankalpa": { const i = document.getElementById("sSankalpa"); if (i) i.value = sd().lastSankalpa = SANKALPAS[+el.dataset.i]; saveSoon(); break; }
     case "medStart": medStart(); break;
+    case "medGo": sMode = "meditation"; go("sadhana"); medStart(); break; // "Start session" on Home
+    case "medBell": med.bell = med.bell ? 0 : (s.medBell || 5); med.nextBell = (Math.floor(medElapsed() / 60000 / med.bell || 0) + 1) * med.bell * 60000; render(); break;
     case "bhramari": // from the Trigger screen
       s.pTech = "bhramari"; s.pRounds.bhramari = 5; save();
       sMode = "pranayama"; beforeScore = null; go("sadhana"); pStart(); break;
