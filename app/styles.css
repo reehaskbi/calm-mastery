@@ -402,3 +402,16 @@ body.focus-open .tabs, body.focus-open .topbar { visibility: hidden; }
 }
 .tag.sync { background: rgba(52, 211, 153, .15); color: #10b981; margin-left: 6px; vertical-align: 1px; }
 label.field span.tag { display: inline-block; font-size: 12px; font-weight: 600; margin: 0 0 0 6px; }
+
+/* ---------- Sadhana: simpler layout ---------- */
+.center { text-align: center; justify-content: center; }
+.card.simple { text-align: center; }
+.card.simple .btn.big { margin-top: 4px; }
+.mantra-line { margin: 0 0 6px; font-size: 18px; font-weight: 600; letter-spacing: .02em; }
+.med-min { margin: 6px 0 12px; }
+.med-min b { display: block; font-size: 56px; line-height: 1; }
+.med-min span { color: var(--muted); font-size: 14px; }
+.caution.small { font-size: 12.5px; margin: 12px 0 0; padding: 8px 10px; }
+.card.acc h3 { font-size: 15px; margin: 14px 0 6px; }
+.card.acc > summary + * { margin-top: 12px; }
+details.srcs[data-fold] { margin-top: 12px; }
