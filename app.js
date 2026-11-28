@@ -10,6 +10,7 @@ function fresh() {
     version: 2, startDate: null, days: {}, triggers: [], active: null,
     observations: [], people: [], wins: [], reviews: {}, plans: {},
     reminders: { morning: "07:30", night: "21:30" },
+    sadhana: { sessions: [], mala: null, settings: {} },
   };
 }
 // Accepts v1 or v2 data and fills in anything missing. Returns null for anything that isn't a backup.
@@ -62,7 +63,7 @@ function nightDone(k) { const d = state.days[k]; return !!(d && d.night); }
 function dayStatus(k) {
   const m = morningDone(k), n = nightDone(k);
   if (m && n) return "full";
-  if (m || n) return "partial";
+  if (m || n || sadhanaOn(k)) return "partial"; // japa, pranayama or meditation also counts as practice
   return k < todayKey() ? "missed" : "future";
 }
 function streak() {
@@ -119,26 +120,35 @@ const disclaimer = () => `<p class="disclaimer">${esc(CRISIS_TEXT)}</p>`;
 const notStarted = () => `<div class="card"><p>Start the programme on the Today tab first.</p><button class="btn primary" data-action="goto" data-tab="today">Go to Today</button></div>`;
 
 // ---------- navigation state ----------
-const TABS = ["today", "capture", "night", "library", "progress"];
+const TABS = ["today", "capture", "sadhana", "night", "library", "progress"];
 let tab = "today", captureMode = "trigger", personId = null, nightDate = null;
 // App shortcuts open ./#trigger, ./#observe or ./#night
 {
   const h = location.hash.slice(1);
   if (h === "trigger" || h === "observe") { tab = "capture"; captureMode = h; }
   else if (TABS.includes(h)) tab = h;
-  if (location.hash) history.replaceState(null, "", location.pathname);
+  // #mala, #pranayama, #meditate and #sadhana are read (and cleared) by sadhana.js
+  if (location.hash && !["mala", "pranayama", "meditate", "sadhana"].includes(h)) history.replaceState(null, "", location.pathname);
 }
 
 // ---------- header ----------
 function renderHeader() {
   const b = $("#activeBanner");
-  if (!state.startDate) { $("#dayLabel").textContent = "Not started"; $("#streakBadge").textContent = ""; b.hidden = true; return; }
+  if (!state.startDate) {
+    $("#dayLabel").textContent = "Not started"; $("#streakBadge").textContent = "";
+    const sb = sadhanaBannerHTML();
+    b.hidden = !sb; if (sb) { b.innerHTML = sb; b.dataset.to = "sadhana"; }
+    return;
+  }
   const { cycle, day, n } = cycleInfo();
   $("#dayLabel").textContent = n < 1 ? `Starts ${state.startDate}` : `Cycle ${cycle} · Day ${day} of ${CYCLE} · ${phaseFor(day, cycle).name}`;
   $("#streakBadge").textContent = `🔥 ${streak()}`;
   if (state.active && !(tab === "capture" && captureMode === "trigger")) {
     b.hidden = false;
     b.innerHTML = `${TRIGGER_TYPES[state.active.type].emoji} Calm-down timer running · <span id="bannerClock">${fmtClock(Date.now() - state.active.start)}</span> · tap to open`;
+    b.dataset.to = "trigger";
+  } else if (sadhanaBannerHTML()) {
+    b.hidden = false; b.innerHTML = sadhanaBannerHTML(); b.dataset.to = "sadhana";
   } else b.hidden = true;
 }
 
@@ -157,6 +167,7 @@ function renderWelcome() {
         <li><b>Morning (2 min):</b> a breathing drill, one focus for the day and your posture.</li>
         <li><b>During the day (15 s):</b> tap <b>Capture</b> when you're triggered, when you handle something well, or when you notice something about someone.</li>
         <li><b>Night (3–4 min):</b> a short log separating what happened from what you assumed.</li>
+        <li><b>Sadhana (any time):</b> a 108-bead japa mala counter, guided pranayama (Nadi Shodhana, Bhramari, Sama Vritti) and a meditation timer. Any practice lights up the day.</li>
         <li><b>Once a week (5 min):</b> a review that finds your top triggers and plans your calm response.</li>
       </ul>
       <p>The <b>Library</b> holds the ideas behind it: a body-language cue checklist, the emotional toolkit and the key books.</p>
@@ -211,6 +222,8 @@ function renderToday() {
       </div>
       <details class="srcs"><summary>Research</summary>${srcList(["balban2023", "zaccaro2018"])}</details>
     </div>
+
+    ${sadhanaTodayCard()}
 
     <div class="card ${d.morning.focus ? "done" : ""}">
       <h2>${++step} · Today's one focus ${d.morning.focus ? "✓" : ""}</h2>
@@ -305,6 +318,11 @@ function triggerHTML() {
           ? `<p>Timebox: <b id="timebox">${fmtClock(a.timeboxEnd - Date.now())}</b> left, then re-engage.</p>`
           : `<button class="btn block" data-action="timebox">Start ${t.timeboxMin}-minute timebox</button>`) : ""}
         <details class="srcs"><summary>Research</summary>${srcList(t.src)}</details>
+      </div>
+      <div class="card">
+        <h2>Hum it down</h2>
+        <p class="hint">Five rounds of Bhramari, the humming-bee breath (about a minute). It eases anger and relaxes a tight voice. The timer keeps running.</p>
+        <button class="btn block" data-action="s:bhramari">🐝 Start Bhramari now</button>
       </div>
       <div class="card">
         <h2>Name the feeling</h2>
@@ -543,6 +561,19 @@ function renderLibrary() {
       <p>"When I saw <i>[fact]</i>, I felt <i>[feeling]</i>, because I need <i>[need]</i>. Would you be willing to <i>[specific request]</i>?"</p>
       ${srcList(["rosenberg2003", "friedman1974", "samhsa2019"])}
     </details>
+    <details class="card acc"><summary>Yoga, pranayama &amp; japa</summary>
+      <p>Classical practice trains the same skills as the rest of the programme: slow breathing calms the body, a long humming exhale steadies the voice, and holding one point of attention (a mantra, the breath) is the opposite of being swept along by a trigger.</p>
+      <p class="caution">${esc(SADHANA_CAUTION)}</p>
+      ${Object.values(PRANAYAMA).map(x => `<h3>${esc(x.name)} <span class="src">· ${esc(x.alt)}</span></h3><p>${esc(x.why)}</p><ol class="steps">${x.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>`).join("")}
+      <h3>Meditation</h3>
+      ${Object.values(MEDITATION_STYLES).map(m => `<p><b>${esc(m.name)}.</b> ${esc(m.text)}</p>`).join("")}
+      <h3>Japa</h3>
+      <ul class="steps">${JAPA_NOTES.map(n => `<li>${esc(n)}</li>`).join("")}</ul>
+      <h3>Holding a mala</h3>
+      <ol class="steps">${MALA_HOW.map(n => `<li>${esc(n)}</li>`).join("")}</ol>
+      ${srcList(["cyp", "iyengarLoP", "sutra", "sivananda", "mandlik", "mayo", "nccih2016", "evans", "bernardi2001", "goyal2014", "pramanik2010", "telles2014"])}
+      <button class="btn block" data-action="goto" data-tab="sadhana">Open Sadhana</button>
+    </details>
     <details class="card acc"><summary>Books</summary>
       ${PILLARS.map(p => `<h3>${p.emoji} ${esc(p.name)}</h3>${p.books.map(b => `
         <div class="book"><b>${esc(b.title)}</b> <span class="src">· ${esc(b.author)}</span>
@@ -598,9 +629,10 @@ function renderProgress() {
         <div class="stat"><b>${completed}/${CYCLE}</b><span>Days practised</span></div>
         <div class="stat"><b>${full}</b><span>Full days</span></div>
       </div>
-      <div class="grid41" style="margin-top:12px">${keys.map((k, i) => `<div class="cell ${statuses[i]} ${k === tk ? "today" : ""}" title="${k}">${i + 1}</div>`).join("")}</div>
-      <div class="legend"><span><i style="background:var(--accent)"></i>Full (morning + night)</span><span><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>Partial</span><span><i style="background:var(--warn-soft)"></i>Missed</span></div>
+      <div class="grid41" style="margin-top:12px">${keys.map((k, i) => `<div class="cell ${statuses[i]} ${k === tk ? "today" : ""} ${sadhanaOn(k) ? "lotus" : ""}" title="${k}">${i + 1}</div>`).join("")}</div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Full (morning + night)</span><span><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>Partial</span><span><i style="background:var(--warn-soft)"></i>Missed</span><span><i class="lg-dot"></i>Sadhana done</span></div>
     </div>
+    ${sadhanaProgressCard(keys)}
     <div class="card">
       <h2>Recovery time</h2>
       <p class="hint">Average minutes from trigger to calm. Goal: under 10 minutes.</p>
@@ -740,6 +772,7 @@ function weekSummary(end) {
     drivers: Object.entries(drivers).sort((a, b) => b[1] - a[1]).slice(0, 2).map(e => e[0]),
     wins: state.wins.filter(inRange(from, end)).length,
     observations: state.observations.filter(inRange(from, end)).length,
+    sadhanaDays: Array.from({ length: 7 }, (_, i) => addDays(from, i)).filter(sadhanaOn).length,
     scores: scoreAvg(nights), prevScores: scoreAvg(pnights),
     insights: nights.map(x => x.insight).filter(Boolean),
   };
@@ -763,6 +796,7 @@ function summaryHTML(s) {
     </div>
     <table class="ratings" style="margin-top:10px"><tr>${EQ_SCORES.map(x => `<th>${esc(x.label)}</th>`).join("")}</tr>
       <tr>${EQ_SCORES.map(x => `<td>${s.scores[x.key] == null ? "–" : s.scores[x.key].toFixed(1)}${trend(s.scores[x.key], s.prevScores[x.key], false)}</td>`).join("")}</tr></table>
+    ${s.sadhanaDays != null ? `<p class="hint" style="margin:10px 0 0">🪷 Sadhana on <b>${s.sadhanaDays}/7</b> days</p>` : ""}
     ${s.emotions.length ? `<p class="hint" style="margin:10px 0 0">Feelings you named most: <b>${esc(s.emotions.join(", "))}</b></p>` : ""}
     ${s.drivers.length ? `<p class="hint" style="margin:4px 0 0">Core drivers: <b>${esc(s.drivers.join(", "))}</b></p>` : ""}
     ${s.insights.length ? `<p class="hint" style="margin:10px 0 4px">Your insights this week:</p><ul class="steps">${s.insights.map(i => `<li>${esc(i)}</li>`).join("")}</ul>` : ""}`;
@@ -818,17 +852,21 @@ function render() {
   const navTab = tab === "review" ? "progress" : tab;
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === navTab));
   renderHeader();
-  ({ today: renderToday, capture: renderCapture, night: renderNight, library: renderLibrary, progress: renderProgress, review: renderReview })[tab]();
+  ({ today: renderToday, capture: renderCapture, sadhana: renderSadhana, night: renderNight, library: renderLibrary, progress: renderProgress, review: renderReview })[tab]();
 }
 function go(t) {
   if (t !== "today") breathStop();
+  if (t !== "sadhana") sadhanaLeave();
   if (t !== "night") nightDate = null;
   if (t !== "review") reviewKey = null;
   tab = t; render(); window.scrollTo(0, 0);
 }
 
 document.querySelector(".tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) go(b.dataset.tab); });
-$("#activeBanner").addEventListener("click", () => { captureMode = "trigger"; go("capture"); });
+$("#activeBanner").addEventListener("click", e => {
+  if (e.currentTarget.dataset.to === "sadhana") { sMode = "meditation"; go("sadhana"); return; }
+  captureMode = "trigger"; go("capture");
+});
 
 view.addEventListener("click", e => {
   const el = e.target.closest("[data-action]"); if (!el) return;
@@ -1034,11 +1072,10 @@ setInterval(() => {
 // Only when the date changed, so unsaved typing is never wiped.
 let renderedDate = todayKey();
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && todayKey() !== renderedDate && !(breath && breath.timer)) { renderedDate = todayKey(); render(); }
+  if (!document.hidden && todayKey() !== renderedDate && !(breath && breath.timer) && !sadhanaBusy()) { renderedDate = todayKey(); render(); }
 });
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
-
-render();
+// The first render() runs at the end of sadhana.js, which loads after this file.

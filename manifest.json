@@ -2,23 +2,99 @@
   "id": "./",
   "name": "NeuroLens",
   "short_name": "NeuroLens",
-  "description": "Personal system for emotional balance, clear thinking and reading people, in 41-day cycles.",
+  "description": "Personal system for emotional balance, clear thinking and reading people, with japa, pranayama and meditation, in 41-day cycles.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f4f1ec",
   "theme_color": "#0b5d56",
-  "categories": ["health", "lifestyle", "productivity"],
+  "categories": [
+    "health",
+    "lifestyle",
+    "productivity"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ],
   "shortcuts": [
-    { "name": "Log a trigger", "short_name": "Trigger", "url": "./#trigger", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Observe someone", "short_name": "Observe", "url": "./#observe", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Night log", "short_name": "Night", "url": "./#night", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Log a trigger",
+      "short_name": "Trigger",
+      "url": "./#trigger",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Japa mala counter",
+      "short_name": "Mala",
+      "url": "./#mala",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Meditation timer",
+      "short_name": "Meditate",
+      "url": "./#meditate",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Observe someone",
+      "short_name": "Observe",
+      "url": "./#observe",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Night log",
+      "short_name": "Night",
+      "url": "./#night",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

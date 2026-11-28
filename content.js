@@ -25,6 +25,19 @@ const SOURCES = {
   friedman1974: "Friedman & Rosenman (1974). Type A Behavior and Your Heart (time urgency and hostility).",
   rosenberg2003: "Rosenberg (2003). Nonviolent Communication: A Language of Life (observation, feeling, need, request).",
   david2016: "David (2016). Emotional Agility.",
+  // Yoga, pranayama and japa (the books in the "Yoga and Pranayama" folder, plus key studies)
+  cyp: "Ministry of AYUSH, Government of India. Common Yoga Protocol, International Day of Yoga (Nadishodhana, Bhramari, Dhyana, Sankalpa).",
+  iyengarLoP: "Iyengar, B.K.S. (1981). Light on Pranayama (What is Japa?; sama vrtti; Hints and Cautions).",
+  sutra: "Patanjali, Yoga Sutra I.27–29: the sacred syllable (Om) is His designation; it is repeated with reflection on its meaning; from this comes inwardness and the removal of obstacles.",
+  sivananda: "Swami Sivananda. The Science of Pranayama. Divine Life Society (sagarbha pranayama: breath practice joined with mental japa).",
+  mandlik: "Mandlik, V. (Guruji). Yoga Therapy: A Practical Guide for the Twenty-first Century. Yoga Vidya Gurukul (heart patients: gentle breathing only, no retention or bandhas).",
+  mayo: "Mayo Clinic staff. Meditation: a simple, fast way to reduce stress.",
+  nccih2016: "NIH National Center for Complementary and Integrative Health (2016). Meditation: what you need to know.",
+  evans: "Evans, J.M. How to Meditate: A Primer for Beginners.",
+  bernardi2001: "Bernardi et al. (2001). Effect of rosary prayer and yoga mantras on autonomic cardiovascular rhythms: comparative study. BMJ.",
+  goyal2014: "Goyal et al. (2014). Meditation programs for psychological stress and well-being: a systematic review and meta-analysis. JAMA Internal Medicine.",
+  pramanik2010: "Pramanik et al. (2010). Immediate effect of a slow pace breathing exercise, Bhramari pranayama, on blood pressure and heart rate. Nepal Medical College Journal.",
+  telles2014: "Telles, Sharma & Balkrishna (2014). Blood pressure and heart rate variability during yoga-based alternate nostril breathing practice and breath awareness. Medical Science Monitor Basic Research.",
 };
 
 // One principle is shown each morning, rotating through the list.
@@ -51,6 +64,10 @@ const PRINCIPLES = [
   { text: "Hurry and irritation feed each other. Most delays you fight today will not matter next week.", src: "friedman1974" },
   { text: "Say what you saw, what you feel and what you need, without blame. It gets you heard instead of resisted.", src: "rosenberg2003" },
   { text: "Feelings are data, not directions. Notice them, name them, then act on what you value.", src: "david2016" },
+  { text: "Japa gathers a scattered mind onto one thought. Repeat the mantra slowly, and let its meaning, not the count, hold your attention.", src: "sutra" },
+  { text: "Reciting a mantra or rosary slows breathing to about six breaths a minute, the rhythm at which heart and breath fall into step.", src: "bernardi2001" },
+  { text: "Bhramari: a long humming exhale soothes the mind and nervous system and eases anger and restlessness.", src: "cyp" },
+  { text: "Never force the breath. Proceed step by step; pranayama done hastily or forcibly does harm.", src: "iyengarLoP" },
 ];
 
 // The 41-day cycle follows the weekly drills of the programme:
@@ -352,3 +369,108 @@ const LAYERS = [
 ];
 
 const CRISIS_TEXT = "This app supports skill-building. It is not therapy or medical treatment. If you have thoughts of harming yourself or someone else, contact a professional or call Tele-MANAS on 14416 (India, free, 24/7) or your local emergency number.";
+
+// ---------- Sadhana: japa mala, pranayama, meditation ----------
+// Techniques follow the Common Yoga Protocol and Light on Pranayama. Ratios are in seconds.
+const PRANAYAMA = {
+  nadi: {
+    name: "Nadi Shodhana", alt: "Anuloma Viloma · alternate-nostril breathing",
+    why: "Balances and steadies. Induces calm, improves concentration and lowers stress and anxiety. Good before demanding work.",
+    steps: [
+      "Sit tall in any comfortable meditative posture, eyes closed. Relax with a few deep breaths.",
+      "Left hand on the left knee in Jnana mudra. Right hand in Nasagra mudra: index and middle fingers folded, thumb by the right nostril, ring and little fingers by the left.",
+      "Close the right nostril with the thumb and breathe in through the left.",
+      "Close the left with the ring and little fingers, release the thumb, breathe out through the right.",
+      "Breathe in through the right, close it, open the left and breathe out through the left. That is one round.",
+      "Keep the breath slow, steady and controlled, never forced. Start with equal inhale and exhale, then gradually move to 1 : 2.",
+    ],
+    ratios: [
+      { id: "eq4", label: "Equal 4 : 4 (beginner)", i: 4, h: 0, e: 4 },
+      { id: "r12", label: "1 : 2 · 4 : 8", i: 4, h: 0, e: 8 },
+      { id: "r5", label: "1 : 2 · 5 : 10", i: 5, h: 0, e: 10 },
+      { id: "hold", label: "With hold 4 : 4 : 8", i: 4, h: 4, e: 8 },
+    ],
+    rounds: [3, 5, 9, 11], defRounds: 5, src: ["cyp", "telles2014"],
+  },
+  bhramari: {
+    name: "Bhramari", alt: "Humming-bee breath",
+    why: "Your go-to for anger, a raised voice or restless urgency. The steady hum soothes the nervous system and relaxes the throat and voice.",
+    steps: [
+      "Sit in any meditative posture with eyes closed.",
+      "Breathe in deeply through the nose.",
+      "Breathe out slowly and steadily while making a deep, even humming sound, like a black bee. That is one round.",
+      "Optional (Shanmukhi mudra): thumbs close the ears, index fingers rest on the closed eyes, ring and little fingers by the lips.",
+      "Avoid with a nose or ear infection.",
+    ],
+    ratios: [
+      { id: "h6", label: "Hum 6 s", i: 4, h: 0, e: 6 },
+      { id: "h8", label: "Hum 8 s", i: 4, h: 0, e: 8 },
+      { id: "h10", label: "Hum 10 s", i: 4, h: 0, e: 10 },
+      { id: "h12", label: "Hum 12 s", i: 5, h: 0, e: 12 },
+    ],
+    rounds: [3, 5, 9, 11], defRounds: 5, hum: true, src: ["cyp", "pramanik2010"],
+  },
+  box: {
+    name: "Sama Vritti", alt: "Equal / box breathing",
+    why: "Inhale, hold, exhale, hold, all the same length. Immediate steadiness before a difficult conversation.",
+    steps: [
+      "Sit or stand tall. Breathe through the nose.",
+      "Inhale for the count, hold gently, exhale for the same count, hold empty for the same count.",
+      "Holds should feel easy and soft, never a strain. If they don't, use Gentle mode.",
+      "Master equal breathing (sama vrtti) before trying unequal ratios.",
+    ],
+    ratios: [
+      { id: "b3", label: "3 · 3 · 3 · 3", i: 3, h: 3, e: 3, h2: 3 },
+      { id: "b4", label: "4 · 4 · 4 · 4", i: 4, h: 4, e: 4, h2: 4 },
+      { id: "b5", label: "5 · 5 · 5 · 5", i: 5, h: 5, e: 5, h2: 5 },
+      { id: "b6", label: "6 · 6 · 6 · 6", i: 6, h: 6, e: 6, h2: 6 },
+    ],
+    rounds: [4, 6, 10, 15], defRounds: 6, src: ["iyengarLoP", "balban2023"],
+  },
+  deep: {
+    name: "Dirgha Shvasa", alt: "Slow deep breathing, no holds",
+    why: "Safe for everyone, including high blood pressure and heart conditions. Slow nasal breathing near six breaths a minute calms the body.",
+    steps: [
+      "Sit comfortably. Breathe through the nose into the belly, then the ribs, then the upper chest.",
+      "Exhale slowly and completely in reverse.",
+      "No holds. Keep it soft and quiet.",
+    ],
+    ratios: [
+      { id: "d55", label: "5 : 5 (6 per min)", i: 5, h: 0, e: 5 },
+      { id: "d46", label: "4 : 6 (6 per min)", i: 4, h: 0, e: 6 },
+      { id: "d44", label: "4 : 4 (easy)", i: 4, h: 0, e: 4 },
+    ],
+    rounds: [6, 12, 30, 60], defRounds: 12, src: ["mandlik", "zaccaro2018"],
+  },
+};
+
+const MEDITATION_STYLES = {
+  breath: { name: "Breath awareness", text: "Sit with the spine comfortably erect, eyes closed, face slightly upturned. You need not concentrate: keep a mild focus between the eyebrows and stay conscious of the breath. When thoughts come, let them pass and return to the breath.", src: "cyp" },
+  mantra: { name: "Silent mantra", text: "Repeat your mantra silently, without moving the lips or tongue, letting it ride on the breath. Reflect on its meaning (artha-bhavana) rather than counting.", src: "iyengarLoP" },
+  open: { name: "Just sit", text: "A quiet spot, a comfortable posture. Let thoughts and sensations come and go without judging them. Whenever you notice you've drifted, gently come back. That return is the practice.", src: "mayo" },
+};
+
+const SANKALPAS = [
+  "I will keep my mind balanced today.",
+  "I will speak slowly and softly, even when rushed.",
+  "I will let others work at their pace.",
+  "I will come back to calm quickly and re-engage.",
+  "Through every action I will create a peaceful atmosphere around me.",
+];
+
+// How to use a physical mala alongside (or instead of) the counter.
+const MALA_HOW = [
+  "Hold the mala in one hand, draped over the middle finger. Many teachers use the non-dominant hand; in Hindu practice it is usually the right hand, with the index finger kept off the beads. Follow your own tradition or teacher.",
+  "Start at the bead next to the guru (meru) bead, the larger bead with the tassel.",
+  "Use your thumb to pull one bead towards you for each mantra, one bead at a time, letting the breath and mantra set the rhythm.",
+  "When you reach the guru bead, don't cross it. Pause, turn the mala around and go back the other way for the next round.",
+];
+
+const JAPA_NOTES = [
+  "Japa (repetition of a mantra) gathers a wandering, agitated mind onto a single thought, act or feeling.",
+  "Repeat with reflection on the meaning (artha-bhavana), with sincerity and feeling. Mechanical counting is not the aim; the counter just frees you from keeping track.",
+  "Silent japa can flow with the breath, without moving the mouth or tongue. This keeps the mind attentive and lengthens the breath.",
+  "A traditional mala has 108 beads plus the guru (meru) bead. Bring an intention (sankalpa) to each round; the beads become a reminder you can carry wherever you go.",
+];
+
+const SADHANA_CAUTION = "Breathe through the nose, slowly, never forced or strained. Stop and breathe normally if you feel dizzy, breathless or uneasy. If you have high blood pressure or a heart condition, or are pregnant, skip breath holds: turn on Gentle mode. Avoid Bhramari with a nose or ear infection. Practise on an empty stomach, ideally at a fixed time each morning. This is not medical treatment; check with your doctor if you have a health condition.";

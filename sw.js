@@ -1,6 +1,6 @@
 // Offline support: network first (so updates show up), cache as fallback.
-const CACHE = "neurolens-v4";
-const FILES = ["./", "index.html", "styles.css", "content.js", "app.js", "manifest.json", "icon.svg",
+const CACHE = "neurolens-v5";
+const FILES = ["./", "index.html", "styles.css", "content.js", "app.js", "sadhana.js", "manifest.json", "icon.svg",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
