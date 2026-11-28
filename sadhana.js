@@ -604,25 +604,29 @@ function pFinish() {
 function meditationHTML() {
   const s = SET();
   if (med) {
-    const el = medElapsed(), st = MEDITATION_STYLES[med.style];
-    return `<div class="immersive" style="--art:url('art/dawn.svg')">
-      <div class="im-top">
-        <button class="im-round" data-action="goto" data-tab="today" aria-label="Back (keeps running)"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-        <button class="im-round" data-action="s:medEnd" aria-label="End now"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    const el = medElapsed(), st = MEDITATION_STYLES[med.style], lit = Math.round((el / med.dur) * DOTS);
+    return `<div class="player">
+      <div class="pl-top">
+        <button class="pl-back" data-action="goto" data-tab="today"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Now practising</button>
+        <span class="pchip">${med.pausedAt ? "Paused" : "Screen stays on"}</span>
       </div>
-      <div class="im-body">
-        <small>${esc(st.name)}${med.bell ? ` · bell every ${med.bell} min` : ""}</small>
-        <h1>Inner Calm</h1>
-        <p class="im-sub">${med.sankalpa ? `“${esc(med.sankalpa)}”` : "Take a slow breath"}</p>
-        <p class="im-time"><span id="medTime">${fmtClock(el)}</span> / ${fmtClock(med.dur)}${med.pausedAt ? " · paused" : ""}</p>
-        <div class="im-bar"><i id="medBar" style="width:${(el / med.dur) * 100}%"></i></div>
-        <div class="im-ctrl">
-          <button class="im-side" data-action="s:medBell"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="16" r="2"/></svg>${med.bell ? "Bell on" : "Bell off"}</button>
-          <button class="im-play" data-action="s:medPause" aria-label="${med.pausedAt ? "Resume" : "Pause"}">${med.pausedAt
-            ? `<svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>` : `<svg viewBox="0 0 24 24"><path d="M8 5h3v14H8zM13 5h3v14h-3z"/></svg>`}</button>
-          <button class="im-side" data-action="s:medEnd"><svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>End</button>
-        </div>
-        <p class="im-guide">${esc(st.text)}</p>
+      <div class="figure ${med.pausedAt ? "still" : ""}">
+        <div class="halo"></div>${LOTUS}
+        <div class="callout c1"><b>Mind</b><span>Let thoughts pass</span></div>
+        <div class="callout c2"><b>Heart</b><span>Soften the chest</span></div>
+        <div class="callout c3"><b>Breath</b><span>Long, slow exhale</span></div>
+      </div>
+      <div class="rec">
+        <small>${esc(st.name)}</small>
+        <h2>Inner Calm</h2>
+        <p>${med.sankalpa ? `“${esc(med.sankalpa)}”` : esc(st.text)}</p>
+        <div class="meta"><span>▷ ${Math.round(med.dur / 60000)} min</span><button class="meta-btn" data-action="s:medBell">🔔 ${med.bell ? `Bell every ${med.bell} min` : "Bell off"}</button></div>
+      </div>
+      <div class="matrix" id="medDots">${Array.from({ length: DOTS }, (_, i) => `<i class="${i < lit ? "on" : ""}"></i>`).join("")}</div>
+      <div class="np-time"><span id="medTime">${fmtClock(el)}</span><span>${fmtClock(med.dur)}</span></div>
+      <div class="np-btns">
+        <button class="hold" data-hold="medEnd"><i></i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Hold to finish</button>
+        <button class="w" data-action="s:medPause">${med.pausedAt ? `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>Resume` : `<svg viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg>Take a break`}</button>
       </div>
     </div>`;
   }
@@ -646,6 +650,7 @@ function meditationHTML() {
       <p class="hint" style="margin:0">The screen stays on. One bowl strike to begin, three to end.</p>
       ${srcList(["goyal2014", "nccih2016", "evans", "cyp"])}`)}`;
 }
+const DOTS = 90; // progress dots in the player
 function medElapsed() { if (!med) return 0; return (med.pausedAt || Date.now()) - med.start - med.paused; }
 function medStart() {
   const s = SET(), sank = val("sSankalpa");
@@ -671,7 +676,8 @@ function medTick() {
   if (e >= med.dur) return medFinish(false);
   if (med.bell && e >= med.nextBell) { med.nextBell += med.bell * 60000; if (med.dur - e > 30000) Snd.bowl(294, 5, 0.14); }
   const t = document.getElementById("medTime"); if (t) t.textContent = fmtClock(e);
-  const f = document.getElementById("medBar"); if (f) f.style.width = (e / med.dur) * 100 + "%";
+  const lit = Math.round((e / med.dur) * DOTS), dots = document.querySelectorAll("#medDots i");
+  dots.forEach((d, i) => d.classList.toggle("on", i < lit));
   const b = document.getElementById("sBannerClock"); if (b) b.textContent = fmtClock(med.dur - e);
 }
 
@@ -841,6 +847,17 @@ document.addEventListener("pointerup", e => {
   if (!pad || e.target.closest(".mf-top")) return;
   e.preventDefault(); addBead();
 });
+let holdT = null;
+view.addEventListener("pointerdown", e => {
+  const b = e.target.closest("[data-hold]"); if (!b) return;
+  b.classList.add("holding");
+  holdT = setTimeout(() => { holdT = null; b.classList.remove("holding"); buzz(40); if (med) medFinish(true); }, 1200);
+});
+["pointerup", "pointerleave", "pointercancel"].forEach(ev => view.addEventListener(ev, e => {
+  if (!holdT) return; const b = e.target.closest && e.target.closest("[data-hold]");
+  if (ev === "pointerleave" && !b) return;
+  clearTimeout(holdT); holdT = null; document.querySelectorAll(".holding").forEach(x => x.classList.remove("holding"));
+}, true));
 document.addEventListener("pointercancel", () => { if (drag) { drag = null; strandShift(dragDy); dragDy = 0; } });
 
 view.addEventListener("click", e => {
