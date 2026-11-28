@@ -1,4 +1,4 @@
-// Calm Mastery: the full personal system.
+// NeuroLens: the full personal system.
 // All data stays in this browser's localStorage on this device. Use Progress > Export to back up.
 
 const KEY = "calm-mastery.v1"; // storage key kept from v1 so existing data loads
@@ -692,14 +692,14 @@ function icsText(morning, night) {
   const link = location.href.split("#")[0];
   const icsEsc = s => s.replace(/[\\,;]/g, m => "\\" + m);
   const ev = (id, time, title, desc) => [
-    "BEGIN:VEVENT", `UID:${id}-${start}@calm-mastery`, `DTSTAMP:${stamp}`,
+    "BEGIN:VEVENT", `UID:${id}-${start}@neurolens`, `DTSTAMP:${stamp}`,
     `DTSTART:${start}T${time.replace(":", "")}00`, "DURATION:PT5M", "RRULE:FREQ=DAILY;COUNT=183",
     `SUMMARY:${icsEsc(title)}`, `DESCRIPTION:${icsEsc(desc + " " + link)}`, `URL:${link}`,
     "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${icsEsc(title)}`, "TRIGGER:PT0M", "END:VALARM", "END:VEVENT",
   ].join("\r\n");
-  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Calm Mastery//EN", "CALSCALE:GREGORIAN",
-    ev("morning", morning, "Calm Mastery: morning (2 min)", "Breathe. Pick one focus. Set your posture."),
-    ev("night", night, "Calm Mastery: night log (4 min)", "Fact vs. story. Rate your day. One insight."),
+  return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//NeuroLens//EN", "CALSCALE:GREGORIAN",
+    ev("morning", morning, "NeuroLens: morning (2 min)", "Breathe. Pick one focus. Set your posture."),
+    ev("night", night, "NeuroLens: night log (4 min)", "Fact vs. story. Rate your day. One insight."),
     "END:VCALENDAR", ""].join("\r\n");
 }
 
@@ -978,11 +978,11 @@ view.addEventListener("click", e => {
     case "reminders": {
       const m = $("#remMorning").value || "07:30", n = $("#remNight").value || "21:30";
       state.reminders = { morning: m, night: n }; save();
-      download("calm-mastery-reminders.ics", icsText(m, n), "text/calendar");
+      download("neurolens-reminders.ics", icsText(m, n), "text/calendar");
       toast("Open the file to add it to your calendar"); break;
     }
     case "export":
-      download(`calm-mastery-backup-${k}.json`, JSON.stringify(state, null, 2), "application/json"); break;
+      download(`neurolens-backup-${k}.json`, JSON.stringify(state, null, 2), "application/json"); break;
     case "reset":
       if (confirm("Erase ALL your data on this device? This cannot be undone. Export a backup first if you want to keep it.")) {
         state = fresh(); save(); go("today");
