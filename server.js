@@ -19,4 +19,4 @@ http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": TYPES[path.extname(file)] || "application/octet-stream", "Cache-Control": "no-cache" });
     res.end(data);
   });
-}).listen(PORT, HOST, () => console.log(`Calm Mastery running at http://localhost:${PORT}`));
+}).listen(PORT, HOST, () => console.log(`NeuroLens running at http://localhost:${PORT}`));

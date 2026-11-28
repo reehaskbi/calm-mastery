@@ -1,4 +1,4 @@
-# Calm Mastery: personal MVP
+# NeuroLens
 
 A personal system for emotional regulation (impatience, raised voice, sulking), clearer thinking and reading people, run in 41-day cycles over about six months. About 6 minutes a day.
 

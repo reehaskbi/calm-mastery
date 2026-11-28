@@ -3,4 +3,5 @@
 .claude/
 *.json.bak
 calm-mastery-backup-*.json
+neurolens-backup-*.json
 node_modules/
