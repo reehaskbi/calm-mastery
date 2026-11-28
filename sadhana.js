@@ -428,60 +428,57 @@ function malaHTML() {
   const beadsToday = today.reduce((a, x) => a + (x.beads || 0), 0) + m.total;
   const malasToday = today.reduce((a, x) => a + (x.malas || 0), 0) + m.malas;
   return `
-    <div class="card mala-card">
+    <div class="card mala-card simple">
+      ${s.mantra ? `<p class="mantra-line">${esc(s.mantra)}</p>` : ""}
       <div class="mala-ring">${beadRing(m)}<div class="mala-num"><b id="mCount">${m.beads}</b><span id="mOf">of ${s.beadsPerMala}</span></div></div>
-      <div class="stats">
-        <div class="stat"><b id="mMalas">${m.malas}</b><span>Malas this session</span></div>
-        <div class="stat"><b id="mTotal">${m.total.toLocaleString()}</b><span>Beads this session</span></div>
-        <div class="stat"><b>${malasToday}/${s.malaGoal}</b><span>Today's goal</span></div>
-      </div>
-      ${beforeRow()}
-      <button class="btn primary block big" data-action="s:focus" style="margin-top:12px">${m.total ? "Continue counting" : "Start counting"} (full screen)</button>
-      <div class="row" style="margin-top:8px">
-        <button class="btn" data-action="s:tap" style="flex:1">+1 bead</button>
-        <button class="btn" data-action="s:undo">−1</button>
-        ${m.total ? `<button class="btn" data-action="s:malaLog">Finish &amp; log</button><button class="btn" data-action="s:malaReset" style="color:var(--warn)">Reset</button>` : ""}
-      </div>
-      <p class="hint" style="margin:10px 0 0">Full screen turns the whole screen into a tap pad and keeps the screen awake. ${beadsToday ? `Today so far: <b>${beadsToday.toLocaleString()}</b> beads.` : ""}</p>
+      <p class="hint center">${m.malas ? `<b id="mMalas">${m.malas}</b> mala${m.malas > 1 ? "s" : ""} done · ` : ""}Today ${malasToday}/${s.malaGoal} mala${s.malaGoal > 1 ? "s" : ""}${beadsToday ? ` · ${beadsToday.toLocaleString()} beads` : ""}</p>
+      <button class="btn primary block big" data-action="s:focus">${m.total ? "Continue counting" : "Start counting"}</button>
+      ${m.total ? `<div class="row center" style="margin-top:8px">
+        <button class="btn" data-action="s:malaLog">Finish &amp; log</button>
+        <button class="linkbtn" data-action="s:undo">−1</button>
+        <button class="linkbtn" data-action="s:malaReset" style="color:var(--warn)">Reset</button>
+      </div>` : ""}
     </div>
-    <div class="card">
-      <h2>Mala settings</h2>
+    ${fold("mSet", "⚙ Settings", `
       <label class="field"><span>Your mantra (optional)</span><small>Shown on the counter, e.g. Om Namah Shivaya, Om, Gayatri, Hare Krishna.</small>
         <input type="text" id="sMantra" value="${esc(s.mantra)}" placeholder="Om Namah Shivaya"></label>
-      <label class="field"><span>Full-screen counter</span>
-        <div class="chips">${[["strand", "📿 Bead strand (pull like a real mala)"], ["ring", "◯ Ring"]].map(([v, l]) => `<button class="chip ${s.malaView === v ? "selected" : ""}" data-action="s:set" data-k="malaView" data-v="${v}" data-str="1">${l}</button>`).join("")}</div></label>
-      <label class="field"><span>Bead type</span><small>Changes how the beads look and sound. Tap to hear each one.</small>
+      <label class="field"><span>Beads</span>
         <div class="chips">${Object.entries(BEAD_TYPES).map(([v, l]) => `<button class="chip ${s.beadType === v ? "selected" : ""}" data-action="s:beadType" data-v="${v}"><i class="bd mini ${v}"></i>${l}</button>`).join("")}</div></label>
-      <label class="field"><span>Beads per mala</span>
-        <div class="chips">${[108, 54, 27, 21].map(v => `<button class="chip ${s.beadsPerMala === v ? "selected" : ""}" data-action="s:set" data-k="beadsPerMala" data-v="${v}">${v}</button>`).join("")}</div></label>
-      <label class="field"><span>Daily goal (malas)</span>
-        <div class="chips">${[1, 2, 3, 5, 11, 16].map(v => `<button class="chip ${s.malaGoal === v ? "selected" : ""}" data-action="s:set" data-k="malaGoal" data-v="${v}">${v}</button>`).join("")}</div></label>
-      <label class="field"><span>Bead sound ${s.beadSound === "silent" ? "" : s.paceGuard ? `<span class="tag sync">🔗 Audio synced · ${s.paceGuard} s</span>` : `<span class="tag">Free pace · 1.2 s tone</span>`}</span><small>Tap to hear each. Each bead's sound lasts as long as your pace guard and fades out just as the next bead unlocks. The guru bead (108) plays a deeper sound in the same style.</small>
-        <div class="chips">${[["wood", "🪵 Soft wood click"], ["bowl", "🔔 Singing bowl"], ["silent", "🔇 Silent"]].map(([v, l]) => `<button class="chip ${s.beadSound === v ? "selected" : ""}" data-action="s:beadSound" data-v="${v}">${l}</button>`).join("")}</div></label>
-      <label class="field"><span>Pace guard</span><small>Minimum time between beads. Taps or pulls sooner than this are ignored, so you can't double-count or rush the chant.</small>
+      <label class="field"><span>Sound</span>
+        <div class="chips">${[["wood", "🪵 Wood"], ["bowl", "🔔 Bowl"], ["silent", "🔇 Silent"]].map(([v, l]) => `<button class="chip ${s.beadSound === v ? "selected" : ""}" data-action="s:beadSound" data-v="${v}">${l}</button>`).join("")}</div></label>
+      <label class="field"><span>Pace guard</span><small>Taps sooner than this are ignored. Each bead's sound lasts this long.</small>
         <div class="chips">${[[0, "Free"], [1.5, "1.5 s"], [3, "3 s"], [5, "5 s"]].map(([v, l]) => `<button class="chip ${s.paceGuard === v ? "selected" : ""}" data-action="s:pace" data-v="${v}">${l}</button>`).join("")}</div></label>
-      ${toggle("haptic", isIOS ? "Haptic tick (iPhone with iOS 18 or later)" : "Vibrate on every bead")}
-      ${isIOS ? toggle("silentOk", "Play sounds even with the silent switch on", "Pauses other audio while you count.") : ""}
-      ${toggle("showCount", "Show the number in full screen", "Turn off to count purely by feel and sound.")}
-      ${"mediaSession" in navigator ? toggle("earbud", "Earbud button counts a bead (beta)", "In full screen, a press of your headset's play/pause or next button adds a bead; previous undoes. Volume buttons can't be read by web apps.") : ""}
-    </div>
-    <details class="card acc"><summary>How to hold and move a mala</summary>
+      ${subFold("mMore", "More options", `
+        <label class="field"><span>Full-screen view</span>
+          <div class="chips">${[["strand", "📿 Strand"], ["ring", "◯ Ring"]].map(([v, l]) => `<button class="chip ${s.malaView === v ? "selected" : ""}" data-action="s:set" data-k="malaView" data-v="${v}" data-str="1">${l}</button>`).join("")}</div></label>
+        <label class="field"><span>Beads per mala</span>
+          <div class="chips">${[108, 54, 27, 21].map(v => `<button class="chip ${s.beadsPerMala === v ? "selected" : ""}" data-action="s:set" data-k="beadsPerMala" data-v="${v}">${v}</button>`).join("")}</div></label>
+        <label class="field"><span>Daily goal (malas)</span>
+          <div class="chips">${[1, 2, 3, 5, 11, 16].map(v => `<button class="chip ${s.malaGoal === v ? "selected" : ""}" data-action="s:set" data-k="malaGoal" data-v="${v}">${v}</button>`).join("")}</div></label>
+        ${toggle("haptic", isIOS ? "Haptic tick (iOS 18+)" : "Vibrate on every bead")}
+        ${isIOS ? toggle("silentOk", "Play sounds with the silent switch on", "Pauses other audio while you count.") : ""}
+        ${toggle("showCount", "Show the number in full screen", "Off = count purely by feel and sound.")}
+        ${"mediaSession" in navigator ? toggle("earbud", "Earbud button counts a bead (beta)", "Play/pause or next adds a bead; previous undoes.") : ""}`)}`)}
+    ${fold("mGuide", "Guide", `
+      <h3>How to hold and move a mala</h3>
       <ol class="steps">${MALA_HOW.map(n => `<li>${esc(n)}</li>`).join("")}</ol>
-      <p class="hint" style="margin:0">With a physical mala, the app can still keep your total: tap once per round, or use full screen with a thumb on the screen instead of the beads.</p>
-    </details>
-    <details class="card acc"><summary>About japa</summary>
+      <h3>About japa</h3>
       <ul class="steps">${JAPA_NOTES.map(n => `<li>${esc(n)}</li>`).join("")}</ul>
-      ${srcList(["sutra", "iyengarLoP", "sivananda", "bernardi2001"])}
-    </details>`;
+      ${srcList(["sutra", "iyengarLoP", "sivananda", "bernardi2001"])}`)}`;
 }
+// Folded sections remember whether they're open across re-renders (tapping a chip re-renders the tab).
+const folds = {};
+function fold(id, summary, body) {
+  return `<details class="card acc" data-fold="${id}" ${folds[id] ? "open" : ""}><summary>${summary}</summary>${body}</details>`;
+}
+function subFold(id, summary, body) {
+  return `<details class="srcs" data-fold="${id}" ${folds[id] ? "open" : ""}><summary>${summary}</summary>${body}</details>`;
+}
+document.addEventListener("toggle", e => { const d = e.target; if (d.dataset && d.dataset.fold) folds[d.dataset.fold] = d.open; }, true);
 function toggle(key, label, hint) {
   const on = !!SET()[key];
   return `<button class="toggle ${on ? "on" : ""}" data-action="s:toggle" data-k="${key}" role="switch" aria-checked="${on}">
     <span><b>${esc(label)}</b>${hint ? `<small>${esc(hint)}</small>` : ""}</span><i></i></button>`;
-}
-function beforeRow() {
-  return `<div class="before"><small>How settled do you feel right now? <span class="src">(optional)</span></small>
-    <div class="score s10">${Array.from({ length: 10 }, (_, i) => i + 1).map(v => `<button type="button" class="${beforeScore === v ? "selected" : ""}" data-action="s:before" data-v="${v}">${v}</button>`).join("")}</div></div>`;
 }
 
 // ---------- pranayama ----------
@@ -506,31 +503,33 @@ function pranayamaHTML() {
   const total = Math.round(roundSec(t) * n);
   const holds = (r.h || r.h2) && !s.gentle;
   return `
-    <div class="card">
-      <h2>Choose a practice</h2>
-      ${Object.entries(PRANAYAMA).map(([id, x]) => `<button class="choice ${t === id ? "selected" : ""}" data-action="s:tech" data-t="${id}" ${running ? "disabled" : ""}>
-        <b>${esc(x.name)}</b> <span class="src">· ${esc(x.alt)}</span><br><small class="muted">${esc(x.why)}</small></button>`).join("")}
-    </div>
-    <div class="card pacer-card">
-      <span class="tag">${esc(T.name)}</span>
-      <div class="chips" style="margin-top:10px">${T.ratios.map(x => `<button class="chip ${r.id === x.id ? "selected" : ""}" data-action="s:ratio" data-id="${x.id}" ${running ? "disabled" : ""}>${esc(x.label)}</button>`).join("")}</div>
-      <div class="chips" style="margin-top:8px">${T.rounds.map(v => `<button class="chip ${n === v ? "selected" : ""}" data-action="s:rounds" data-v="${v}" ${running ? "disabled" : ""}>${v} rounds</button>`).join("")}</div>
-      <p class="hint" style="margin:8px 0 0">About ${total >= 90 ? Math.round(total / 60) + " min" : total + " s"}${holds ? " · includes breath holds" : ""}${s.gentle && (r.h || r.h2) ? " · holds skipped (Gentle mode)" : ""}</p>
+    <div class="card pacer-card simple">
+      <div class="chips center">${Object.entries(PRANAYAMA).map(([id, x]) => `<button class="chip ${t === id ? "selected" : ""}" data-action="s:tech" data-t="${id}" ${running ? "disabled" : ""}>${esc(x.name.split(" (")[0])}</button>`).join("")}</div>
+      <p class="hint center" style="margin:8px 0 0">${esc(T.why)}</p>
+      <p class="hint center" style="margin:4px 0 0"><b>${esc(r.label)}</b> · ${n} rounds · about ${total >= 90 ? Math.round(total / 60) + " min" : total + " s"}${s.gentle && (r.h || r.h2) ? " · no holds" : ""}</p>
       ${t === "nadi" ? `<div class="nostrils" id="nostrils"><div class="nos" data-side="L"><b>L</b><small id="nosL">left</small></div><div class="nos" data-side="R"><b>R</b><small id="nosR">right</small></div></div>` : ""}
       <div class="breath">
         <div class="pwrap"><div class="circle" id="pCircle"></div><div class="plabel" id="pLabel">${running ? "" : "Ready"}</div></div>
         <div class="p-secs" id="pSecs">&nbsp;</div>
         <div class="count" id="pCount">&nbsp;</div>
       </div>
-      ${running ? "" : beforeRow()}
-      <div class="row" style="justify-content:center;margin-top:10px">
+      <div class="row center" style="margin-top:10px">
         ${running ? `<button class="btn" data-action="s:pStop">Stop</button>` : `<button class="btn primary big" data-action="s:pStart">Start</button>`}
       </div>
-      ${toggle("gentle", "Gentle mode: no breath holds", "For high blood pressure, heart conditions or pregnancy, or whenever holds feel like a strain.")}
-      ${toggle("pSound", "Sound cues", t === "bhramari" ? "A soft tone marks each phase, with a low drone to hum along with." : "A soft tone marks each change of phase, so you can keep your eyes closed.")}
-      <details class="srcs"><summary>How to do ${esc(T.name)}</summary><ol class="steps">${T.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol>${srcList(T.src)}</details>
-      <p class="caution" style="margin-top:10px">${esc(SADHANA_CAUTION)}</p>
-    </div>`;
+      <p class="caution small center">Never force the breath. Stop if dizzy. ${holds ? "Heart, blood pressure or pregnancy: use Gentle mode." : ""}</p>
+    </div>
+    ${running ? "" : fold("pSet", "⚙ Settings", `
+      <label class="field"><span>Ratio</span>
+        <div class="chips">${T.ratios.map(x => `<button class="chip ${r.id === x.id ? "selected" : ""}" data-action="s:ratio" data-id="${x.id}">${esc(x.label)}</button>`).join("")}</div></label>
+      <label class="field"><span>Rounds</span>
+        <div class="chips">${T.rounds.map(v => `<button class="chip ${n === v ? "selected" : ""}" data-action="s:rounds" data-v="${v}">${v}</button>`).join("")}</div></label>
+      ${toggle("gentle", "Gentle mode: no breath holds", "For high blood pressure, heart conditions or pregnancy.")}
+      ${toggle("pSound", "Sound cues", "A soft tone marks each phase, so your eyes can stay closed.")}`)}
+    ${running ? "" : fold("pGuide", "Guide", `
+      <h3>How to do ${esc(T.name)}</h3>
+      <ol class="steps">${T.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol>
+      <p class="caution">${esc(SADHANA_CAUTION)}</p>
+      ${srcList(T.src)}`)}`;
 }
 function pStart() {
   const t = pTech();
@@ -617,28 +616,25 @@ function meditationHTML() {
       <p class="hint" style="margin:12px 0 0;text-align:center">${esc(MEDITATION_STYLES[med.style].text)}</p>
     </div>`;
   }
+  const st = MEDITATION_STYLES[s.medStyle] || Object.values(MEDITATION_STYLES)[0];
   return `
-    <div class="card">
-      <h2>Sankalpa (intention)</h2>
-      <p class="hint">One short, positive resolve to carry into the session and the day.</p>
-      <input type="text" id="sSankalpa" value="${esc(sd().lastSankalpa || "")}" placeholder="I will keep my mind balanced today.">
-      <div class="chips" style="margin-top:8px">${SANKALPAS.map((x, i) => `<button class="chip" data-action="s:sankalpa" data-i="${i}">${esc(x)}</button>`).join("")}</div>
+    <div class="card simple">
+      <div class="med-min"><b id="medMinLbl">${s.medMin}</b><span>minutes</span></div>
+      <div class="chips center">${[5, 10, 15, 20, 30, 41].map(v => `<button class="chip ${s.medMin === v ? "selected" : ""}" data-action="s:set" data-k="medMin" data-v="${v}">${v}</button>`).join("")}</div>
+      <p class="hint center" style="margin:10px 0">${esc(st.name)}${s.medBell ? ` · bell every ${s.medBell} min` : ""}${sd().lastSankalpa ? ` · “${esc(sd().lastSankalpa)}”` : ""}</p>
+      <button class="btn primary block big" data-action="s:medStart">Begin</button>
     </div>
-    <div class="card">
-      <h2>Style</h2>
-      ${Object.entries(MEDITATION_STYLES).map(([id, x]) => `<button class="choice ${s.medStyle === id ? "selected" : ""}" data-action="s:set" data-k="medStyle" data-v="${id}" data-str="1"><b>${esc(x.name)}</b><br><small class="muted">${esc(x.text)}</small></button>`).join("")}
-    </div>
-    <div class="card">
-      <h2>Duration: <span id="medMinLbl">${s.medMin}</span> min</h2>
-      <div class="chips">${[5, 10, 15, 20, 30, 41].map(v => `<button class="chip ${s.medMin === v ? "selected" : ""}" data-action="s:set" data-k="medMin" data-v="${v}">${v}</button>`).join("")}</div>
-      <input type="range" id="sMedMin" min="5" max="41" step="1" value="${s.medMin}" style="width:100%;margin-top:10px" aria-label="Minutes">
-      <label class="field" style="margin-top:10px"><span>Interval bell</span><small>A soft bell to catch a wandering mind.</small>
+    ${fold("medSet", "⚙ Settings", `
+      <label class="field"><span>Intention (sankalpa, optional)</span>
+        <input type="text" id="sSankalpa" value="${esc(sd().lastSankalpa || "")}" placeholder="I will keep my mind balanced today.">
+        <div class="chips" style="margin-top:8px">${SANKALPAS.map((x, i) => `<button class="chip" data-action="s:sankalpa" data-i="${i}">${esc(x)}</button>`).join("")}</div></label>
+      <label class="field"><span>Style</span>
+        <div class="chips">${Object.entries(MEDITATION_STYLES).map(([id, x]) => `<button class="chip ${s.medStyle === id ? "selected" : ""}" data-action="s:set" data-k="medStyle" data-v="${id}" data-str="1">${esc(x.name)}</button>`).join("")}</div>
+        <small>${esc(st.text)}</small></label>
+      <label class="field"><span>Interval bell</span>
         <div class="chips">${[[0, "Off"], [5, "Every 5 min"], [10, "Every 10 min"]].map(([v, l]) => `<button class="chip ${s.medBell === v ? "selected" : ""}" data-action="s:set" data-k="medBell" data-v="${v}">${l}</button>`).join("")}</div></label>
-      ${beforeRow()}
-      <button class="btn primary block big" data-action="s:medStart" style="margin-top:12px">Begin (singing bowl)</button>
-      <p class="hint" style="margin:8px 0 0">The screen stays on during the session. One bowl strike to begin, three to end.</p>
-      <details class="srcs"><summary>Research</summary>${srcList(["goyal2014", "nccih2016", "evans", "cyp"])}</details>
-    </div>`;
+      <p class="hint" style="margin:0">The screen stays on. One bowl strike to begin, three to end.</p>
+      ${srcList(["goyal2014", "nccih2016", "evans", "cyp"])}`)}`;
 }
 function medElapsed() { if (!med) return 0; return (med.pausedAt || Date.now()) - med.start - med.paused; }
 function medStart() {
@@ -733,34 +729,14 @@ function mandalaHTML(keys) {
   }).join("")}</div>
   <div class="legend"><span><i class="lg sd1"></i>1 practice</span><span><i class="lg sd2"></i>2</span><span><i class="lg sd3"></i>All 3 (japa, breath, meditation)</span></div>`;
 }
+// One compact line for today on the Sadhana tab; tap to see (and delete) entries.
 function sadhanaStatsHTML() {
-  const keys = sadhanaKeys(), k = todayKey(), t = sadhanaTotals(keys[0], keys[keys.length - 1]), d = sadhanaTotals(k, k), m = malaLive();
-  return `
-    <div class="card">
-      <h2>Today's sadhana</h2>
-      <div class="stats">
-        <div class="stat"><b>${(d.beads + m.total).toLocaleString()}</b><span>📿 Beads (${d.malas + m.malas} mala${d.malas + m.malas === 1 ? "" : "s"})</span></div>
-        <div class="stat"><b>${d.pRounds}</b><span>🌬 Breath rounds</span></div>
-        <div class="stat"><b>${d.mMin}</b><span>🪷 Min meditated</span></div>
-      </div>
-      ${d.list.length ? `<ul class="list" style="margin-top:10px">${d.list.slice().reverse().map(x => `<li><span>${KIND[x.kind].emoji} ${esc(x.label)}${x.kind === "japa" ? ` · ${x.beads} beads` : x.kind === "pranayama" ? ` · ${x.rounds} rounds` : ` · ${x.minutes} min`}${x.after ? ` <span class="src">· stillness ${x.before ? x.before + "→" : ""}${x.after}</span>` : ""}</span>
-        <button class="x" data-action="s:del" data-id="${x.id}" aria-label="Delete">×</button></li>`).join("")}</ul>` : ""}
-    </div>
-    <div class="card">
-      <h2>41-day mandala</h2>
-      <p class="hint">${state.startDate ? `Cycle ${cycleInfo().cycle}.` : "Last 41 days."} Any practice lights the day, and it also counts toward your NeuroLens streak.</p>
-      ${mandalaHTML(keys)}
-      <div class="stats" style="margin-top:12px">
-        <div class="stat"><b>${t.days}</b><span>Days practised</span></div>
-        <div class="stat"><b>${t.beads.toLocaleString()}</b><span>Beads (${t.malas} malas)</span></div>
-        <div class="stat"><b>${t.pMin + t.mMin}</b><span>Min breath + meditation</span></div>
-      </div>
-      ${t.after != null ? `<p class="hint" style="margin:10px 0 0">Average stillness after practice: <b>${t.after.toFixed(1)}/10</b>${t.shift != null ? `, a change of <b>${t.shift > 0 ? "+" : ""}${t.shift.toFixed(1)}</b> from before (${t.rated} rated sessions)` : ""}.</p>` : ""}
-    </div>
-    <div class="card">
-      <h2>Does practice help you?</h2>
-      ${effectHTML(keys)}
-    </div>`;
+  const k = todayKey(), d = sadhanaTotals(k, k), m = malaLive(), beads = d.beads + m.total;
+  const bits = [beads && `📿 ${beads.toLocaleString()} beads`, d.pRounds && `🌬 ${d.pRounds} rounds`, d.mMin && `🪷 ${d.mMin} min`].filter(Boolean);
+  if (!d.list.length) return bits.length ? `<p class="hint center">Today: ${bits.join(" · ")}</p>` : "";
+  return fold("today", `Today: ${bits.join(" · ")}`, `<ul class="list">${d.list.slice().reverse().map(x => `<li><span>${KIND[x.kind].emoji} ${esc(x.label)}${x.kind === "japa" ? ` · ${x.beads} beads` : x.kind === "pranayama" ? ` · ${x.rounds} rounds` : ` · ${x.minutes} min`}${x.after ? ` <span class="src">· stillness ${x.before ? x.before + "→" : ""}${x.after}</span>` : ""}</span>
+      <button class="x" data-action="s:del" data-id="${x.id}" aria-label="Delete">×</button></li>`).join("")}</ul>
+    <p class="hint" style="margin:8px 0 0">The 41-day mandala and "does practice help?" are on the Progress tab.</p>`);
 }
 // Used by the Progress tab.
 function sadhanaProgressCard(keys) {
@@ -773,6 +749,8 @@ function sadhanaProgressCard(keys) {
       <div class="stat"><b>${t.pMin + t.mMin}</b><span>Min breath + meditation</span></div>
     </div>
     ${t.after != null ? `<p class="hint" style="margin:10px 0">Stillness after practice: <b>${t.after.toFixed(1)}/10</b>${t.shift != null ? ` (${t.shift > 0 ? "+" : ""}${t.shift.toFixed(1)} vs before)` : ""}</p>` : ""}
+    <h3 style="font-size:15px;margin:12px 0 6px">41-day mandala</h3>
+    ${mandalaHTML(keys)}
     <h3 style="font-size:15px;margin:12px 0 6px">Practice days vs other days</h3>
     ${effectHTML(keys)}
     <button class="btn block" style="margin-top:10px" data-action="goto" data-tab="sadhana">Open Sadhana</button>
@@ -875,8 +853,6 @@ view.addEventListener("click", e => {
       if (k === "haptic" && s.haptic) buzz(25);
       render(); break;
     }
-    case "before": { const v = +el.dataset.v; beforeScore = beforeScore === v ? null : v;
-      el.parentElement.querySelectorAll("button").forEach(b => b.classList.toggle("selected", +b.dataset.v === beforeScore)); break; }
     case "after": case "calibSkip": {
       const ses = sd().sessions.find(x => x.id === calib);
       if (ses && a === "s:after") ses.after = +el.dataset.v;
@@ -905,11 +881,6 @@ view.addEventListener("click", e => {
 view.addEventListener("input", e => {
   if (e.target.id === "sMantra") { SET().mantra = e.target.value.trim(); saveSoon(); }
   if (e.target.id === "sSankalpa") { sd().lastSankalpa = e.target.value; saveSoon(); }
-  if (e.target.id === "sMedMin") {
-    SET().medMin = +e.target.value; saveSoon();
-    const l = document.getElementById("medMinLbl"); if (l) l.textContent = e.target.value;
-    view.querySelectorAll('[data-k="medMin"]').forEach(c => c.classList.toggle("selected", +c.dataset.v === +e.target.value));
-  }
 });
 
 // Keyboard: Space / Enter / ↑ / + count a bead, Backspace / ↓ / − undo, Esc leaves full screen.
