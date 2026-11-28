@@ -46,7 +46,7 @@ To install it on a phone as an app with offline support, it needs to be served o
 
 ## Live site (GitHub Pages)
 
-https://reehaskbi.github.io/calm-mastery/ is served from the `gh-pages` branch, which holds only the contents of `app/`.
+https://neurolens.mhaanvia.tech/ (domain on Hostinger, CNAME `neurolens` → `reehaskbi.github.io`) is served by GitHub Pages from the `gh-pages` branch, which holds only the contents of `app/`.
 After committing changes to `main`, publish them with:
 
 ```bash
