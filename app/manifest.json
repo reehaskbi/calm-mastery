@@ -2,7 +2,7 @@
   "id": "./",
   "name": "Calm Mastery",
   "short_name": "Calm Mastery",
-  "description": "41-day programme for emotional regulation, patience and clear thinking.",
+  "description": "Personal system for emotional balance, clear thinking and reading people, in 41-day cycles.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -18,6 +18,7 @@
   ],
   "shortcuts": [
     { "name": "Log a trigger", "short_name": "Trigger", "url": "./#trigger", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Observe someone", "short_name": "Observe", "url": "./#observe", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
     { "name": "Night log", "short_name": "Night", "url": "./#night", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
