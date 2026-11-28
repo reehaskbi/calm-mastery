@@ -190,6 +190,8 @@ function renderToday() {
   let step = 0;
 
   view.innerHTML = `
+    ${todayHero(k, d, p, day)}
+    <h3 class="section-h">Your morning practice</h3>
     ${reviewDue() ? `<div class="card accent-card"><span class="tag">Weekly review due</span>
       <p>Five minutes to find your top two triggers this week and plan your calm response to each.</p>
       <button class="btn primary block" data-action="goto" data-tab="review">Do weekly review</button></div>` : ""}
@@ -257,6 +259,47 @@ function renderToday() {
     </div>
     ${disclaimer()}`;
   if (breath && breath.timer) paintBreath();
+}
+
+// ---------- Home header: greeting, a recommended session, quick actions and two tiles ----------
+const ICON = {
+  calm: '<path d="M12 20c0-6 2-10 7-13-1 6-3 10-7 13zM12 20c0-5-2-8-6-10 0 5 2 8 6 10z"/>',
+  breath: '<path d="M3 9h10a3 3 0 1 0-3-3M3 13h15a3 3 0 1 1-3 3M3 17h7"/>',
+  meditate: '<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7.5"/>',
+  mala: '<circle cx="12" cy="5" r="1.6"/><circle cx="17" cy="7.5" r="1.6"/><circle cx="19" cy="12.5" r="1.6"/><circle cx="7" cy="7.5" r="1.6"/><circle cx="5" cy="12.5" r="1.6"/><circle cx="7.5" cy="17" r="1.6"/><circle cx="16.5" cy="17" r="1.6"/><path d="M12 19v3"/>',
+  night: '<path d="M19 14.5A7.5 7.5 0 0 1 9.5 5 7.5 7.5 0 1 0 19 14.5z"/>',
+  play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/>',
+};
+const svgI = (n) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+function todayHero(k, d, p, day) {
+  const h = new Date().getHours();
+  const greet = h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  const sd = sadhanaTotals(k, k);
+  const rec = !d.morning.breath ? { title: "Release Tension", meta: "1 min · Physiological sigh", act: `data-action="heroBreath"` }
+    : !sd.list.length ? { title: "Inner Calm", meta: `${SET().medMin} min · Guided meditation`, act: `data-action="s:medGo"` }
+    : h >= 18 && !nightDone(k) ? { title: "Close the Day", meta: "4 min · Night log", act: `data-action="goto" data-tab="night"` }
+    : { title: "Hum it Down", meta: "5 rounds · Bhramari breath", act: `data-action="s:bhramari"` };
+  const q = [["calm", "Calm", `data-action="goto" data-tab="capture"`], ["breath", "Breath", `data-action="s:open" data-m="pranayama"`],
+    ["meditate", "Meditate", `data-action="s:open" data-m="meditation"`], ["mala", "Mala", `data-action="s:open" data-m="mala"`]];
+  return `
+    <section class="greet">
+      <p>${greet},</p>
+      <h1>${esc(p.name)}</h1>
+      <p class="muted">A calmer mind starts here · Day ${day} of ${CYCLE}</p>
+    </section>
+    <div class="hero" style="--art:url('art/dawn.svg')">
+      <div class="hero-txt">
+        <small>Recommended for you</small>
+        <h2>${rec.title}</h2>
+        <p>${rec.meta}</p>
+        <button class="pill" ${rec.act}>${svgI("play")} Start session</button>
+      </div>
+    </div>
+    <div class="quick">${q.map(([ic, l, act], i) => `<button class="q q${i}" ${act}><span>${svgI(ic)}</span>${l}</button>`).join("")}</div>
+    <div class="tiles">
+      <button class="tile" style="--art:url('art/dusk.svg')" data-action="goto" data-tab="night"><b>Night Log</b><small>4 min · ${nightDone(k) ? "Done ✓" : "Reflect"}</small><i>${svgI("play")}</i></button>
+      <button class="tile" style="--art:url('art/dunes.svg')" data-action="s:open" data-m="mala"><b>Japa Mala</b><small>${SET().beadsPerMala} beads · Count</small><i>${svgI("play")}</i></button>
+    </div>`;
 }
 
 function breathRun() {
@@ -884,6 +927,12 @@ view.addEventListener("click", e => {
       render(); breathRun(); break;
     }
     case "breathStop": breathStop(); render(); break;
+    case "heroBreath": {
+      breath = { mode: "sigh3", cycle: 0, step: 0, timer: 1 };
+      render(); breathRun();
+      const c = $("#circle"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" });
+      break;
+    }
     case "focus": dayData(k).morning.focus = currentPhase().focuses[+el.dataset.i]; save(); render(); break;
     case "cue": {
       const m = dayData(k).morning;
